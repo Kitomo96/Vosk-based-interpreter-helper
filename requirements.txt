@@ -1,0 +1,28 @@
+# Vosk-based Interpreter Helper Dependencies
+
+# Core Speech Recognition
+vosk>=0.3.45
+
+# Audio Processing
+pyaudio>=0.2.11
+sounddevice>=0.4.6
+
+# GUI Frameworks
+# Choose one - either tkinter (built-in) or PyQt6
+# tkinter is included with Python, so no install needed
+PyQt6>=6.5.0
+
+# Scientific Computing
+numpy>=1.24.0
+
+# JSON is built into Python
+# threading is built into Python
+# queue is built into Python
+# sys is built into Python
+# tkinter is built into Python
+
+# Development Dependencies (optional)
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+# black>=23.0.0
+# flake8>=6.0.0
