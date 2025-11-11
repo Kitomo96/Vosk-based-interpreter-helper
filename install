@@ -1,0 +1,27 @@
+# Quick Installation Script for Windows
+@echo off
+echo Installing Vosk-based Interpreter Helper...
+
+REM Check if Python is installed
+python --version >nul 2>&1
+if errorlevel 1 (
+    echo Error: Python is not installed or not in PATH
+    echo Please install Python 3.8+ from https://python.org
+    pause
+    exit /b 1
+)
+
+REM Install dependencies
+echo Installing Python dependencies...
+pip install -r requirements.txt
+
+REM Run setup
+echo Running project setup...
+python setup.py
+
+echo.
+echo Installation complete!
+echo You can now run the application:
+echo   - Tkinter version: python src/tkinter_implementation.py
+echo   - PyQt6 version: python src/pyqt6_implementation.py
+pause

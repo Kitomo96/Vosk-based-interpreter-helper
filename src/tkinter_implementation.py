@@ -28,8 +28,8 @@ class LiveCaptioner:
         
         # Initialize language models
         self.models = {
-            "en": vosk.Model("vosk-model-small-en-us"),  # English model
-            "es": vosk.Model("vosk-model-small-es")  # Spanish model
+            "en": vosk.Model("models/vosk-model-small-en-us"),  # English model
+            "es": vosk.Model("models/vosk-model-small-es")  # Spanish model
         }
         
         # Initialize speech recognizers
