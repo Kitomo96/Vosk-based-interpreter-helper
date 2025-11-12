@@ -60,7 +60,7 @@ class CaptionProcessor:
         
         self.logger.info("Caption processor initialized")
     
-    def process_recognition_result(self, text: str, is_final: bool, language: str, 
+    def process_recognition_result(self, text: str, is_final: bool, language: str,
                                  confidence_scores: List[float] = None) -> Optional[CaptionEntry]:
         """
         Process a recognition result and return a caption entry
@@ -81,6 +81,9 @@ class CaptionProcessor:
         if language not in self.caption_history:
             self.logger.warning(f"Unknown language: {language}")
             return None
+        
+        # FIXED: Removed sentence accumulation logic - SpeechRecognitionEngine already does this correctly
+        # CaptionProcessor only handles filtering and storage
         
         # Create caption entry
         caption_entry = CaptionEntry(

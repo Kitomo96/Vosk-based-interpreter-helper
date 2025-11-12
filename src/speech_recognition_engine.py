@@ -181,18 +181,14 @@ class SpeechRecognitionEngine:
                 text = result.get("text", "").strip()
                 
                 if text:
-                    # Combine with current sentence
-                    full_text = self.current_sentences[lang_code] + " " + text
-                    full_text = full_text.strip()
-                    
-                    # Get confidence scores
-                    final_confidences = self.current_confidences[lang_code] + [
-                        word.get('conf', 0.0) for word in result.get('result', [])
-                    ]
+                    # CRITICAL FIX: Use ONLY the final result text (don't combine with current sentence)
+                    # The final result already contains the complete accumulated sentence
+                    final_text = text  # Remove line 185-186 combining logic
+                    final_confidences = [word.get('conf', 0.0) for word in result.get('result', [])]
                     
                     # Create final result
                     recognition_result = RecognitionResult(
-                        text=full_text,
+                        text=final_text,
                         is_final=True,
                         confidence_scores=final_confidences,
                         language=lang_code
