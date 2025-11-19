@@ -109,6 +109,14 @@ ipcMain.on('close-window', () => {
     }
 });
 
+ipcMain.on('set-languages', (event, languages) => {
+    if (pythonProcess && pythonProcess.stdin) {
+        const command = JSON.stringify({ type: 'set_languages', languages }) + '\n';
+        pythonProcess.stdin.write(command);
+        console.log(`Sent language selection to Python: ${languages}`);
+    }
+});
+
 app.on('ready', () => {
     createWindow();
     startPythonBackend();

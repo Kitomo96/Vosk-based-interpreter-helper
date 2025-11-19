@@ -4,8 +4,37 @@ import './App.css';
 // Safe import for Electron IPC
 const ipcRenderer = window.require ? window.require('electron').ipcRenderer : null;
 
+// Available languages configuration
+const LANGUAGES = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'es', name: 'Spanish', flag: '🇪🇸' },
+  { code: 'fr', name: 'French', flag: '🇫🇷' }
+];
+
 function App() {
   const [status, setStatus] = useState('Connecting...');
+
+  // Language selection state
+  const [leftLanguage, setLeftLanguage] = useState('en');
+  const [rightLanguage, setRightLanguage] = useState('es');
+
+  // Clear transcription history when language changes
+  useEffect(() => {
+    setEnglishHistory([]);
+    setEnglishInterim('');
+  }, [leftLanguage]);
+
+  useEffect(() => {
+    setSpanishHistory([]);
+    setSpanishInterim('');
+  }, [rightLanguage]);
+
+  // Send language selection to Python backend
+  useEffect(() => {
+    if (ipcRenderer) {
+      ipcRenderer.send('set-languages', [leftLanguage, rightLanguage]);
+    }
+  }, [leftLanguage, rightLanguage]);
 
   // State for finalized sentences
   const [englishHistory, setEnglishHistory] = useState([]);
@@ -56,14 +85,8 @@ function App() {
           const text = data.text ? data.text.trim() : "";
           if (!text) return;
 
-          if (data.language === 'es') {
-            if (data.is_final) {
-              setSpanishHistory(prev => [...prev, text]);
-              setSpanishInterim('');
-            } else {
-              setSpanishInterim(text);
-            }
-          } else if (data.language === 'en') { // Only accept 'en' and 'es'
+          // Route to left pane if it matches left language
+          if (data.language === leftLanguage) {
             if (data.is_final) {
               setEnglishHistory(prev => [...prev, text]);
               setEnglishInterim('');
@@ -71,7 +94,16 @@ function App() {
               setEnglishInterim(text);
             }
           }
-          // Ignore other languages (like 'fr') for now
+          // Route to right pane if it matches right language
+          else if (data.language === rightLanguage) {
+            if (data.is_final) {
+              setSpanishHistory(prev => [...prev, text]);
+              setSpanishInterim('');
+            } else {
+              setSpanishInterim(text);
+            }
+          }
+          // Ignore transcriptions that don't match either selected language
         }
       } catch (e) {
         console.error("Parse error:", e);
@@ -288,7 +320,7 @@ function App() {
               onChange={handleFontSize}
             />
           </div>
-          <div className="setting-item">
+          <div className="setting-item align-right">
             <label>
               <input
                 type="checkbox"
@@ -307,7 +339,22 @@ function App() {
         {/* English Pane */}
         <div className="language-pane">
           <div className="pane-header">
-            <span className="flag">🇺🇸</span> English
+            <span className="flag">{LANGUAGES.find(l => l.code === leftLanguage)?.flag}</span>
+            <select
+              className="language-selector"
+              value={leftLanguage}
+              onChange={(e) => setLeftLanguage(e.target.value)}
+            >
+              {LANGUAGES.map(lang => (
+                <option
+                  key={lang.code}
+                  value={lang.code}
+                  disabled={lang.code === rightLanguage}
+                >
+                  {lang.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="transcription-area" ref={enScrollRef}>
             {englishHistory.map((text, i) => (
@@ -323,7 +370,22 @@ function App() {
         {/* Spanish Pane */}
         <div className="language-pane">
           <div className="pane-header">
-            <span className="flag">🇪🇸</span> Spanish
+            <span className="flag">{LANGUAGES.find(l => l.code === rightLanguage)?.flag}</span>
+            <select
+              className="language-selector"
+              value={rightLanguage}
+              onChange={(e) => setRightLanguage(e.target.value)}
+            >
+              {LANGUAGES.map(lang => (
+                <option
+                  key={lang.code}
+                  value={lang.code}
+                  disabled={lang.code === leftLanguage}
+                >
+                  {lang.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="transcription-area" ref={esScrollRef}>
             {spanishHistory.map((text, i) => (
