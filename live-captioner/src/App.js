@@ -6,9 +6,9 @@ const ipcRenderer = window.require ? window.require('electron').ipcRenderer : nu
 
 // Available languages configuration
 const LANGUAGES = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-  { code: 'fr', name: 'French', flag: '🇫🇷' }
+  { code: 'en', name: 'English', flag: '/flags/us.svg' },
+  { code: 'es', name: 'Spanish', flag: '/flags/es.svg' },
+  { code: 'fr', name: 'French', flag: '/flags/fr.svg' }
 ];
 
 function App() {
@@ -18,25 +18,8 @@ function App() {
   const [leftLanguage, setLeftLanguage] = useState('en');
   const [rightLanguage, setRightLanguage] = useState('es');
 
-  // Clear transcription history when language changes
-  useEffect(() => {
-    setEnglishHistory([]);
-    setEnglishInterim('');
-  }, [leftLanguage]);
-
-  useEffect(() => {
-    setSpanishHistory([]);
-    setSpanishInterim('');
-  }, [rightLanguage]);
-
-  // Send language selection to Python backend
-  useEffect(() => {
-    if (ipcRenderer) {
-      ipcRenderer.send('set-languages', [leftLanguage, rightLanguage]);
-    }
-  }, [leftLanguage, rightLanguage]);
-
   // State for finalized sentences
+  // Note: englishHistory = Left Pane History, spanishHistory = Right Pane History
   const [englishHistory, setEnglishHistory] = useState([]);
   const [spanishHistory, setSpanishHistory] = useState([]);
 
@@ -48,6 +31,13 @@ function App() {
   const esEndRef = useRef(null);
   const enScrollRef = useRef(null);
   const esScrollRef = useRef(null);
+
+  // Send language selection to Python backend
+  useEffect(() => {
+    if (ipcRenderer) {
+      ipcRenderer.send('set-languages', [leftLanguage, rightLanguage]);
+    }
+  }, [leftLanguage, rightLanguage]);
 
   const scrollToBottomIfNeeded = (scrollContainer, endRef) => {
     if (!scrollContainer) return;
@@ -275,6 +265,35 @@ function App() {
     document.addEventListener('mouseup', onMouseUp);
   };
 
+  const handleSwapLanguages = () => {
+    // Swap languages
+    const tempLeft = leftLanguage;
+    setLeftLanguage(rightLanguage);
+    setRightLanguage(tempLeft);
+
+    // Swap history
+    const tempLeftHistory = englishHistory;
+    setEnglishHistory(spanishHistory);
+    setSpanishHistory(tempLeftHistory);
+
+    // Swap interim text
+    const tempLeftInterim = englishInterim;
+    setEnglishInterim(spanishInterim);
+    setSpanishInterim(tempLeftInterim);
+  };
+
+  const handleLeftLanguageChange = (e) => {
+    setLeftLanguage(e.target.value);
+    setEnglishHistory([]);
+    setEnglishInterim('');
+  };
+
+  const handleRightLanguageChange = (e) => {
+    setRightLanguage(e.target.value);
+    setSpanishHistory([]);
+    setSpanishInterim('');
+  };
+
   return (
     <div className="App" style={{ '--app-opacity': opacity }}>
       {/* Resize Handles */}
@@ -354,11 +373,15 @@ function App() {
         {/* English Pane */}
         <div className="language-pane">
           <div className="pane-header">
-            <span className="flag">{LANGUAGES.find(l => l.code === leftLanguage)?.flag}</span>
+            <img
+              src={LANGUAGES.find(l => l.code === leftLanguage)?.flag}
+              alt="flag"
+              className="flag-icon"
+            />
             <select
               className="language-selector"
               value={leftLanguage}
-              onChange={(e) => setLeftLanguage(e.target.value)}
+              onChange={handleLeftLanguageChange}
             >
               {LANGUAGES.map(lang => (
                 <option
@@ -382,14 +405,25 @@ function App() {
           </div>
         </div>
 
+        {/* Swap Button */}
+        <div className="swap-container">
+          <button className="swap-button" onClick={handleSwapLanguages} title="Swap Languages">
+            ⇄
+          </button>
+        </div>
+
         {/* Spanish Pane */}
         <div className="language-pane">
           <div className="pane-header">
-            <span className="flag">{LANGUAGES.find(l => l.code === rightLanguage)?.flag}</span>
+            <img
+              src={LANGUAGES.find(l => l.code === rightLanguage)?.flag}
+              alt="flag"
+              className="flag-icon"
+            />
             <select
               className="language-selector"
               value={rightLanguage}
-              onChange={(e) => setRightLanguage(e.target.value)}
+              onChange={handleRightLanguageChange}
             >
               {LANGUAGES.map(lang => (
                 <option

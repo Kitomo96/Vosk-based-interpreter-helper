@@ -424,10 +424,13 @@ body {
   color: rgba(255, 255, 255, 0.3);
 }
 
-.flag {
-  font-size: 20px;
+.flag-icon {
+  width: 24px;
+  height: 16px;
   margin-right: 8px;
-  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+  object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Transcription Area */
@@ -485,4 +488,38 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Swap Button */
+.swap-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swap-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.swap-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.swap-button:active {
+  transform: scale(0.95);
 }
