@@ -1,51 +1,37 @@
 # Vosk-based Interpreter Helper
 
-A real-time, privacy-focused speech-to-text transcription system designed specifically for interpreter assistance. This application provides dual-language transcription with confidence scoring and professional-grade features for live interpreting scenarios.
+A real-time, privacy-focused speech-to-text transcription system designed specifically for interpreter assistance. This Electron-based application provides dual-language transcription with intelligent language detection and professional-grade features for live interpreting scenarios.
 
 ## 🌟 Features
 
 ### Core Functionality
-- **Real-time dual-language transcription** - Simultaneous English and Spanish processing
-- **Confidence-based filtering** - Color-coded accuracy indicators for word-level confidence
-- **Privacy-focused** - No data storage, all processing happens locally
+- **Real-time dual-language transcription** - Simultaneous processing of multiple languages
+- **Intelligent language detection** - Automatic detection with confidence scoring
+- **Privacy-focused** - No data storage, all processing happens locally offline
 - **Multi-platform support** - Windows, macOS, and Linux
 
 ### User Interface
-- **Side-by-side language panels** - Clean, professional layout
-- **Adjustable transparency** - Perfect for video calls
-- **Always-on-top mode** - Keeps captions visible over other applications
-- **Responsive design** - Scales with window size
-- **Audio device selection** - Choose your preferred microphone
+- **Modern Electron UI** - Clean, professional React-based interface
+- **Side-by-side language panels** - Clear visualization of both languages
+- **Language swapping** - Easily swap left/right language displays
+- **Dynamic language selection** - Choose which languages to process
+- **Real-time updates** - Instant transcription display
 
 ### Professional Features
-- **Audio level visualization** - Real-time input monitoring
+- **Offline speech recognition** - Uses Vosk models, no internet required
+- **Confidence-based filtering** - Quality indicators for transcription accuracy
 - **Sentence tracking** - Intelligent sentence boundary detection
-- **History management** - Maintains transcription history (configurable limits)
-- **Multiple implementations** - Choose between Tkinter (lightweight) or PyQt6 (professional)
+- **History management** - Maintains transcription history per language
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8 or higher
-- Microphone or audio input device
-- At least 1GB free disk space (for language models)
+- **Node.js** 16+ (for Electron frontend)
+- **Python** 3.8+ (for speech recognition backend)
+- **Microphone** or audio input device
+- **2GB+ free disk space** (for language models)
 
 ### Installation
-
-#### Option 1: Automated Installation (Recommended)
-
-**Windows:**
-```bash
-install.bat
-```
-
-**Linux/macOS:**
-```bash
-chmod +x install.sh
-./install.sh
-```
-
-#### Option 2: Manual Installation
 
 1. **Clone the repository:**
 ```bash
@@ -53,238 +39,182 @@ git clone <repository-url>
 cd vosk-based-interpreter-helper
 ```
 
-2. **Install dependencies:**
+2. **Install Python backend dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Run setup:**
-```bash
-python setup.py
-```
-
-4. **Download language models** (if not already present):
+3. **Download Vosk language models:**
    - Download from [Vosk Models](https://alphacephei.com/vosk/models)
    - Extract to the `models/` directory
-   - Current models: English, Spanish, French
+   - Recommended models:
+     - English: `vosk-model-small-en-us`
+     - Spanish: `vosk-model-small-es`
+     - French: `vosk-model-small-fr`
+
+4. **Install Electron frontend dependencies:**
+```bash
+cd live-captioner
+npm install
+```
 
 ### Running the Application
 
-**Tkinter Version (Lightweight):**
+**Development mode:**
 ```bash
-python captioner.py
+cd live-captioner
+npm run dev          # Start React dev server
+npm run electron:only  # In another terminal, start Electron
 ```
 
-**PyQt6 Version (Professional):**
+**Production build:**
 ```bash
-python GUI.py
+cd live-captioner
+npm run build
+npm run electron
 ```
 
 ## 📁 Project Structure
 
 ```
 vosk-based-interpreter-helper/
-├── src/                          # Source code
-│   ├── tkinter_implementation.py # Tkinter-based GUI
-│   └── pyqt6_implementation.py   # PyQt6-based GUI
-├── tests/                        # Unit and integration tests
+├── src/                          # Python backend
+│   ├── electron_bridge.py        # Bridge between Electron and Python
+│   ├── speech_recognition_engine.py  # Vosk speech recognition
+│   ├── audio_manager.py          # Audio device management
+│   └── configuration_manager.py  # Configuration handling
+├── live-captioner/               # Electron frontend
+│   ├── public/
+│   │   └── electron.js           # Electron main process
+│   ├── src/
+│   │   ├── App.js                # React main component
+│   │   └── App.css               # Styling
+│   └── package.json              # Frontend dependencies
 ├── config/                       # Configuration files
-├── scripts/                      # Utility scripts
-├── docs/                         # Documentation
+│   └── settings.ini              # Backend settings
 ├── models/                       # Vosk language models
 │   ├── vosk-model-small-en-us/   # English model
 │   ├── vosk-model-small-es/      # Spanish model
 │   └── vosk-model-small-fr/      # French model
 ├── requirements.txt              # Python dependencies
-├── setup.py                      # Project setup script
-├── install.bat                   # Windows installation script
-├── install.sh                    # Linux/macOS installation script
-├── README.md                     # This file
-└── project_analysis_report.md    # Technical analysis
+└── README.md                     # This file
 ```
 
 ## 🎯 Usage Guide
 
 ### Basic Operation
 
-1. **Start the application** using one of the implementation options
-2. **Select your audio input device** from the dropdown menu
+1. **Start the application** using the commands above
+2. **Select languages** using the dropdown menus in the UI
 3. **Grant microphone permissions** when prompted
-4. **Begin speaking** - transcription will appear in real-time
-5. **Monitor confidence levels** using the color coding:
-   - 🟢 **Green**: High confidence (≥85%)
-   - 🟡 **Yellow**: Medium confidence (65-84%)
-   - 🔴 **Red**: Low confidence (50-64%)
+4. **Begin speaking** - transcription will appear in real-time in the selected language panels
 
-### Professional Features
+### Features
 
-- **Privacy Mode**: No transcriptions are saved to disk
-- **Always On Top**: Keeps the application visible during video calls
-- **Transparency Control**: Adjust window opacity for better integration
-- **Audio Device Switching**: Change input sources on-the-fly
-- **History Management**: Clear all history with one click
-
-### Configuration
-
-The application includes several configurable parameters:
-
-- **Confidence Threshold**: Minimum confidence for word inclusion (default: 50%)
-- **History Limit**: Maximum number of captions to store (default: 100)
-- **Audio Settings**: Sample rate (16kHz), chunk size (1024 frames)
-- **Font Scaling**: Automatic font sizing based on window dimensions
+- **Language Selection**: Choose which two languages to display and process
+- **Swap Languages**: Click the swap button to exchange left/right panels
+- **Language Detection**: The system automatically detects which language is being spoken
+- **Real-time Transcription**: See partial results as you speak, with final results confirmed
 
 ## 🛠️ Development
 
-### Development Setup
+### Architecture
 
-1. **Install development dependencies:**
-```bash
-pip install -r requirements.txt
-pip install pytest pytest-cov black flake8
-```
+The application uses a **hybrid architecture**:
 
-2. **Run tests:**
-```bash
-python -m pytest tests/ -v --cov=src
-```
+- **Frontend (Electron + React)**: Modern UI built with React, packaged with Electron
+- **Backend (Python)**: Speech recognition engine using Vosk
+- **Communication**: IPC (Inter-Process Communication) between Electron and Python via stdin/stdout
 
-3. **Code formatting:**
-```bash
-black src/
-flake8 src/
-```
+### Backend Components
 
-### Testing
+- **`electron_bridge.py`**: Main entry point, handles IPC with Electron
+- **`speech_recognition_engine.py`**: Vosk integration, language detection, transcription
+- **`audio_manager.py`**: Audio device enumeration and stream management
+- **`configuration_manager.py`**: INI-based configuration system
 
-- **Unit Tests**: Located in `tests/unit/`
-- **Integration Tests**: Located in `tests/integration/`
-- **Audio Tests**: Specialized tests for audio processing functionality
+### Frontend Components
 
-### Contributing
+- **`electron.js`**: Electron main process, spawns Python backend
+- **`App.js`**: React UI, handles user interaction and displays transcriptions
+- **`App.css`**: Styling for the modern interface
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-feature`
-3. Make your changes and add tests
-4. Run the test suite: `python -m pytest`
-5. Submit a pull request
+### Adding New Languages
+
+1. Download the Vosk model for your language
+2. Extract to `models/` directory
+3. Update `config/settings.ini` with the model path
+4. Add the language code to the frontend language options in `App.js`
 
 ## 📊 Technical Details
 
-### Architecture
-
-The application uses a multi-threaded architecture:
-
-- **Audio Thread**: Captures and processes audio input
-- **Recognition Thread**: Handles speech-to-text conversion
-- **UI Thread**: Manages user interface updates
-- **Worker Threads**: Process results and update displays
-
 ### Dependencies
 
-**Core Dependencies:**
-- `vosk`: Speech recognition engine
-- `pyaudio`: Audio I/O (Tkinter implementation)
-- `sounddevice`: Audio streaming (PyQt6 implementation)
+**Python Backend:**
+- `vosk`: Offline speech recognition engine
+- `pyaudio`: Audio I/O
 - `numpy`: Numerical processing
-- `PyQt6`: Professional GUI framework
 
-**Development Dependencies:**
-- `pytest`: Testing framework
-- `black`: Code formatting
-- `flake8`: Linting
+**Electron Frontend:**
+- `electron`: Desktop application framework
+- `react`: UI framework
+- `react-scripts`: Build tooling
 
 ### Performance
 
 - **Latency**: ~200-500ms end-to-end
-- **Memory Usage**: ~200-500MB (depends on active languages)
-- **CPU Usage**: ~10-30% on modern hardware
+- **Memory Usage**: ~300-600MB (depends on active languages)
+- **CPU Usage**: ~15-40% on modern hardware
 - **Accuracy**: Medium-High (uses small models for speed)
 
 ## 🔧 Configuration
 
-### Language Models
+### Backend Configuration
 
-The application supports multiple languages through Vosk models:
+Edit `config/settings.ini`:
 
-1. **English**: `vosk-model-small-en-us` (recommended)
-2. **Spanish**: `vosk-model-small-es` (recommended)
-3. **French**: `vosk-model-small-fr` (available)
+```ini
+[audio]
+sample_rate = 16000
+chunk_size = 1024
 
-To add new languages:
-1. Download the model from the Vosk website
-2. Extract to the `models/` directory
-3. Update the language configuration in the source code
+[languages]
+english = models/vosk-model-small-en-us
+spanish = models/vosk-model-small-es
+french = models/vosk-model-small-fr
 
-### Audio Settings
+[processing]
+confidence_threshold = 0.5
+language_detection_threshold = 0.6
+```
 
-Configurable audio parameters:
-- **Sample Rate**: 16000 Hz (optimized for speech)
-- **Channels**: 1 (mono)
-- **Chunk Size**: 1024 frames
-- **Format**: 16-bit integer
+### Frontend Configuration
 
-## 📋 Roadmap
-
-This project is actively developed with a comprehensive roadmap of 106 planned features across 10 categories:
-
-### Phase 2: Code Quality & Testing
-- Unit tests and integration tests
-- Configuration management
-- Error handling improvements
-- Performance optimization
-
-### Phase 3: User Experience Enhancement
-- Enhanced GUI with settings management
-- Keyboard shortcuts and hotkeys
-- Mini mode for small screens
-- Session profiles
-
-### Phase 4: Advanced Features
-- Technical term highlighting and translation
-- Personal glossary management
-- React web interface
-- Cloud integration options
-
-For the complete feature list, see `implementations list.txt`.
+Edit `live-captioner/package.json` for Electron settings and build configuration.
 
 ## 🤝 Support
 
-### Getting Help
-
-1. **Check the documentation** in the `docs/` directory
-2. **Review existing issues** on GitHub
-3. **Create a new issue** with detailed information
-4. **Join discussions** in the project discussions
-
-### Reporting Bugs
+### Reporting Issues
 
 When reporting bugs, please include:
-- Operating system and Python version
+- Operating system and version
+- Python version (`python --version`)
+- Node.js version (`node --version`)
 - Complete error messages
-- Steps to reproduce the issue
-- Audio device information
-
-### Feature Requests
-
-We welcome feature requests! Please check the existing roadmap first and provide:
-- Use case description
-- Proposed implementation approach
-- Potential impact on existing features
+- Steps to reproduce
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
 - **Vosk Team**: For the excellent offline speech recognition engine
-- **Python Community**: For the robust audio processing libraries
-- **Interpreter Community**: For feedback and feature requirements
+- **Electron Team**: For the cross-platform desktop framework
+- **React Team**: For the UI framework
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2025-11-11  
-**Status**: Production Ready (Python implementations)  
-
-For technical questions or support, please refer to the `project_analysis_report.md` file for detailed technical information.
+**Version**: 2.0.0 (Electron Implementation)  
+**Last Updated**: 2025-11-20  
+**Status**: Active Development
