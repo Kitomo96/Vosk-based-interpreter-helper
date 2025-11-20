@@ -68,6 +68,18 @@ function App() {
     scrollToBottomIfNeeded(esScrollRef.current, esEndRef);
   }, [spanishHistory, spanishInterim]);
 
+  // Refs to hold current language state for the event listener
+  const leftLanguageRef = useRef(leftLanguage);
+  const rightLanguageRef = useRef(rightLanguage);
+
+  useEffect(() => {
+    leftLanguageRef.current = leftLanguage;
+  }, [leftLanguage]);
+
+  useEffect(() => {
+    rightLanguageRef.current = rightLanguage;
+  }, [rightLanguage]);
+
   useEffect(() => {
     if (!ipcRenderer) {
       setStatus('Error: Not running in Electron');
@@ -85,8 +97,11 @@ function App() {
           const text = data.text ? data.text.trim() : "";
           if (!text) return;
 
+          const currentLeft = leftLanguageRef.current;
+          const currentRight = rightLanguageRef.current;
+
           // Route to left pane if it matches left language
-          if (data.language === leftLanguage) {
+          if (data.language === currentLeft) {
             if (data.is_final) {
               setEnglishHistory(prev => [...prev, text]);
               setEnglishInterim('');
@@ -95,7 +110,7 @@ function App() {
             }
           }
           // Route to right pane if it matches right language
-          else if (data.language === rightLanguage) {
+          else if (data.language === currentRight) {
             if (data.is_final) {
               setSpanishHistory(prev => [...prev, text]);
               setSpanishInterim('');

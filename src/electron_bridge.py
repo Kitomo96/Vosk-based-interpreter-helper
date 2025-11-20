@@ -3,6 +3,7 @@ import json
 import logging
 import signal
 import time
+import threading
 from configuration_manager import ConfigurationManager
 from audio_manager import AudioManager
 from speech_recognition_engine import SpeechRecognitionEngine
@@ -10,6 +11,9 @@ from speech_recognition_engine import SpeechRecognitionEngine
 # Configure logging to stderr so stdout is clean for JSON
 logging.basicConfig(stream=sys.stderr, level=logging.INFO)
 logger = logging.getLogger("ElectronBridge")
+
+# Global reference for the speech engine to be accessed by the listener
+speech_engine = None
 
 def result_callback(result):
     """
@@ -30,7 +34,52 @@ def result_callback(result):
     except Exception as e:
         logger.error(f"Error in callback: {e}")
 
+def stdin_listener():
+    """
+    Listens for commands from Electron via stdin
+    """
+    global speech_engine
+    logger.info("Stdin listener started")
+    
+    while True:
+        try:
+            line = sys.stdin.readline()
+            if not line:
+                break
+                
+            line = line.strip()
+            if not line:
+                continue
+            
+            # DEBUG: Print received line to stderr
+            sys.stderr.write(f"DEBUG: Received stdin: {line}\n")
+            sys.stderr.flush()
+            
+            try:
+                data = json.loads(line)
+                command = data.get('command')
+                
+                if command == 'set_languages':
+                    languages = data.get('languages', [])
+                    sys.stderr.write(f"DEBUG: Processing set_languages: {languages}\n")
+                    sys.stderr.flush()
+                    
+                    if speech_engine:
+                        speech_engine.set_active_languages(languages)
+                    else:
+                        logger.warning("Speech engine not initialized yet")
+                        
+            except json.JSONDecodeError:
+                logger.error(f"Failed to decode JSON from stdin: {line}")
+            except Exception as e:
+                logger.error(f"Error processing stdin command: {e}")
+                
+        except Exception as e:
+            logger.error(f"Error in stdin listener: {e}")
+            time.sleep(1)
+
 def main():
+    global speech_engine
     logger.info("Starting Electron Bridge...")
     
     try:
@@ -53,6 +102,10 @@ def main():
             logger.error("Failed to start recognition")
             sys.exit(1)
             
+        # Start stdin listener thread
+        listener_thread = threading.Thread(target=stdin_listener, daemon=True)
+        listener_thread.start()
+            
         logger.info("Bridge is running. Waiting for audio...")
         # Send ready signal to frontend
         print(json.dumps({"type": "status", "message": "ready"}), flush=True)
@@ -67,7 +120,7 @@ def main():
         logger.error(f"Fatal error: {e}")
         sys.exit(1)
     finally:
-        if 'speech_engine' in locals():
+        if speech_engine:
             speech_engine.stop_recognition()
         if 'audio_manager' in locals():
             audio_manager.stop_stream()

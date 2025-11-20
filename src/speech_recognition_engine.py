@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import time
+import sys
 from typing import Dict, List, Optional, Any, Callable, Tuple
 from threading import Thread, Event
 import queue
@@ -202,6 +203,9 @@ class SpeechRecognitionEngine:
         confidence_threshold = self.processing_config.get('language_detection_threshold', 0.6)
         self.language_detector = LanguageDetector(supported_languages, confidence_threshold)
         
+        # Active languages - which ones to process (default: en, es)
+        self.active_languages = set(['en', 'es'])
+        
         # Initialize speech recognition
         self._initialize_recognition_system()
     
@@ -343,6 +347,15 @@ class SpeechRecognitionEngine:
                         secondary_candidates = [lang for lang in self.recognizers.keys() if lang != primary_language]
                         if secondary_candidates:
                             languages_to_process.extend(secondary_candidates[:1])  # Monitor one additional language
+                
+                # FINAL FILTER: Only process languages that are currently active in the UI
+                # This is the key optimization for performance
+                languages_to_process = [l for l in languages_to_process if l in self.active_languages]
+                
+                # Fallback: If no active languages are selected for processing (e.g. detection found a non-active language),
+                # default to processing all active languages to ensure responsiveness
+                if not languages_to_process and self.active_languages:
+                     languages_to_process = list(self.active_languages)
                 
                 # Process audio for selected languages
                 for lang_code in languages_to_process:
@@ -562,6 +575,35 @@ class SpeechRecognitionEngine:
                 results[lang_code] = False
         return results
     
+    def set_active_languages(self, languages: List[str]) -> None:
+        """Update the list of active languages to process"""
+        import sys
+        sys.stderr.write(f"DEBUG: set_active_languages called with: {languages}\n")
+        sys.stderr.flush()
+        try:
+            # Filter to only supported languages
+            valid_languages = [l for l in languages if l in self.models]
+            sys.stderr.write(f"DEBUG: valid_languages: {valid_languages}\n")
+            sys.stderr.flush()
+            
+            if valid_languages:
+                self.active_languages = set(valid_languages)
+                self.logger.info(f"Active languages updated to: {self.active_languages}")
+                sys.stderr.write(f"DEBUG: Active languages updated to: {self.active_languages}\n")
+                sys.stderr.flush()
+                
+                # If we have a language detector, we could hint it, but for now just filtering is enough
+                if hasattr(self, 'language_detector'):
+                     self.language_detector.reset_language_detection()
+            else:
+                self.logger.warning(f"No valid languages provided in: {languages}")
+                sys.stderr.write(f"DEBUG: No valid languages found. Models loaded: {list(self.models.keys())}\n")
+                sys.stderr.flush()
+        except Exception as e:
+            self.logger.error(f"Error setting active languages: {e}")
+            sys.stderr.write(f"DEBUG: Error setting active languages: {e}\n")
+            sys.stderr.flush()
+
     def shutdown(self) -> None:
         """Shutdown the speech recognition engine"""
         self.logger.info("Shutting down speech recognition engine")
