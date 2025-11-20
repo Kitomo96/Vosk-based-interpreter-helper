@@ -1,12 +1,16 @@
 # Vosk-based Interpreter Helper - Python Backend Dependencies
+# Install with: pip install -r requirements.txt
 
-# Core Speech Recognition
+# ===== Core Speech Recognition =====
 vosk>=0.3.45
 
-# Audio Processing
+# ===== Audio Processing =====
 pyaudio>=0.2.11
 
-# Scientific Computing
-numpy>=1.24.0
+# ===== Scientific Computing =====
+numpy>=1.24.0,<2.0.0
+
+# ===== Future: VAD & Language Detection (Not yet installed) =====
+# onnxruntime>=1.16.0  # For Silero VAD/Language models (lightweight, ~15MB)
 
 # Note: The Electron frontend has its own dependencies in live-captioner/package.json

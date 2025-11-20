@@ -45,11 +45,28 @@ function startPythonBackend() {
         ? path.join(__dirname, '../../src')
         : path.join(process.resourcesPath, 'src');
 
+    // Try to use venv Python first, fall back to system Python
+    const projectRoot = isDev
+        ? path.join(__dirname, '../..')
+        : process.resourcesPath;
+
+    const venvPythonPath = path.join(projectRoot, 'venv', 'Scripts', 'python.exe');
+    const fs = require('fs');
+
+    let pythonCommand = 'python'; // Default to system Python
+
+    if (fs.existsSync(venvPythonPath)) {
+        pythonCommand = venvPythonPath;
+        console.log(`✓ Using venv Python: ${venvPythonPath}`);
+    } else {
+        console.warn('⚠ Virtual environment not found. Using system Python.');
+        console.warn('  Run scripts/setup_venv.ps1 to create the venv.');
+    }
+
     console.log(`Starting Python backend from: ${scriptPath}`);
 
     // Spawn Python process
-    // Ensure 'python' is in PATH or use a bundled python
-    pythonProcess = spawn('python', [scriptPath], {
+    pythonProcess = spawn(pythonCommand, [scriptPath], {
         cwd: cwd,
         stdio: ['pipe', 'pipe', 'pipe'], // Pipe stdio to communicate
     });

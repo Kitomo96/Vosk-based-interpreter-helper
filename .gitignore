@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config (keep template, ignore local overrides)
+config/settings.local.ini
+
+# Models (too large for git)
+models/vosk-model-*/
+
+# Electron
+live-captioner/node_modules/
+live-captioner/build/
+live-captioner/dist/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
