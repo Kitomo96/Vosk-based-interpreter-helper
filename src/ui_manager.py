@@ -483,19 +483,128 @@ class UIManager:
         if self.status_label:
             self.status_label.config(text=message, fg=color)
     
-    def update_language_detection(self, language: str) -> None:
-        """Update language detection indicator"""
+    def update_language_detection(self, language: str, confidence: float = None) -> None:
+        """Update language detection indicator with confidence"""
         language_names = {
             'en': 'English',
-            'es': 'Spanish', 
+            'es': 'Spanish',
             'fr': 'French',
-            'unknown': 'Unknown'
+            'unknown': 'Detecting...'
         }
         
-        language_name = language_names.get(language, 'Unknown')
+        language_name = language_names.get(language, language.upper())
+        
+        # Add confidence indicator
+        if confidence is not None:
+            confidence_indicator = self._get_confidence_indicator(confidence)
+            display_text = f"Language: {language_name} ({confidence_indicator})"
+        else:
+            display_text = f"Language: {language_name}"
         
         if self.language_indicator:
-            self.language_indicator.config(text=f"Detected Language: {language_name}")
+            self.language_indicator.config(text=display_text)
+    
+    def _get_confidence_indicator(self, confidence: float) -> str:
+        """Get confidence indicator based on confidence score"""
+        if confidence >= 0.8:
+            return f"High ({confidence:.0%})"
+        elif confidence >= 0.6:
+            return f"Medium ({confidence:.0%})"
+        elif confidence >= 0.3:
+            return f"Low ({confidence:.0%})"
+        else:
+            return f"Uncertain ({confidence:.0%})"
+    
+    def show_language_detection_panel(self, detection_stats: Dict[str, Any]) -> None:
+        """Show detailed language detection statistics"""
+        # Create or update detection statistics display
+        if not hasattr(self, 'detection_stats_frame'):
+            self._create_detection_stats_frame()
+        
+        detected_lang = detection_stats.get('detected_language', 'unknown')
+        confidence = detection_stats.get('confidence', 0.0)
+        language_breakdown = detection_stats.get('language_breakdown', {})
+        
+        # Update the display
+        language_names = {'en': 'English', 'es': 'Spanish', 'fr': 'French', 'unknown': 'Unknown'}
+        
+        stats_text = f"Detected: {language_names.get(detected_lang, detected_lang)}\n"
+        stats_text += f"Confidence: {confidence:.1%}\n"
+        stats_text += "Language Distribution:\n"
+        
+        for lang, percentage in language_breakdown.items():
+            lang_name = language_names.get(lang, lang.upper())
+            stats_text += f"  {lang_name}: {percentage:.1f}%\n"
+        
+        self.detection_stats_text.config(state=tk.NORMAL)
+        self.detection_stats_text.delete('1.0', tk.END)
+        self.detection_stats_text.insert('1.0', stats_text)
+        self.detection_stats_text.config(state=tk.DISABLED)
+    
+    def _create_detection_stats_frame(self) -> None:
+        """Create frame for displaying language detection statistics"""
+        self.detection_stats_frame = tk.Frame(self.root, relief=tk.RAISED, bd=1)
+        self.detection_stats_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(10, 0))
+        
+        # Title
+        title_label = tk.Label(self.detection_stats_frame, text="Language Detection", font=('Arial', 10, 'bold'))
+        title_label.pack(pady=(10, 5))
+        
+        # Statistics text widget
+        self.detection_stats_text = tk.Text(self.detection_stats_frame, height=8, width=25, wrap=tk.WORD)
+        self.detection_stats_text.pack(padx=10, pady=(0, 10))
+        self.detection_stats_text.config(state=tk.DISABLED)
+        
+        # Manual language selection buttons
+        manual_frame = tk.Frame(self.detection_stats_frame)
+        manual_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+        
+        tk.Label(manual_frame, text="Manual Override:", font=('Arial', 8, 'bold')).pack(anchor=tk.W)
+        
+        button_frame = tk.Frame(manual_frame)
+        button_frame.pack(fill=tk.X, pady=5)
+        
+        self.manual_lang_vars = {}
+        for lang in ['en', 'es', 'fr']:
+            var = tk.BooleanVar()
+            self.manual_lang_vars[lang] = var
+            btn = tk.Checkbutton(button_frame, text=lang.upper(), variable=var,
+                               command=lambda l=lang: self._on_manual_language_select(l))
+            btn.pack(side=tk.LEFT, padx=2)
+        
+        # Reset button
+        reset_btn = tk.Button(manual_frame, text="Reset Detection", command=self._reset_language_detection)
+        reset_btn.pack(pady=5)
+    
+    def _on_manual_language_select(self, language: str) -> None:
+        """Handle manual language selection"""
+        # Clear other selections
+        for lang, var in self.manual_lang_vars.items():
+            if lang != language:
+                var.set(False)
+        
+        # Notify the application about manual language selection
+        if hasattr(self, 'on_language_override_callback'):
+            self.on_language_override_callback(language)
+    
+    def _reset_language_detection(self) -> None:
+        """Reset language detection to automatic mode"""
+        for var in self.manual_lang_vars.values():
+            var.set(False)
+        
+        # Notify the application about reset
+        if hasattr(self, 'on_language_reset_callback'):
+            self.on_language_reset_callback()
+    
+    def hide_language_detection_panel(self) -> None:
+        """Hide the language detection statistics panel"""
+        if hasattr(self, 'detection_stats_frame'):
+            self.detection_stats_frame.pack_forget()
+    
+    def set_language_callbacks(self, override_callback=None, reset_callback=None) -> None:
+        """Set callbacks for language override and reset actions"""
+        self.on_language_override_callback = override_callback
+        self.on_language_reset_callback = reset_callback
     
     def show_visual_feedback(self) -> None:
         """Show visual feedback (brief status change)"""

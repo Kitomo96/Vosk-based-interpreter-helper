@@ -114,6 +114,12 @@ class LiveCaptioner:
         
         # Window close callback
         self.ui_manager.set_window_close_callback(self._on_window_close)
+        
+        # Language detection callbacks
+        self.ui_manager.set_language_callbacks(
+            override_callback=self._on_language_override,
+            reset_callback=self._on_language_reset
+        )
     
     def start_application(self) -> bool:
         """Start the complete application"""
@@ -255,8 +261,14 @@ class LiveCaptioner:
             
             # Update language detection indicator for final results
             if result.is_final and result.text.strip():
-                self.ui_manager.update_language_detection(result.language)
+                # Get current language detection from speech engine
+                detected_lang, confidence = self.speech_engine.get_detected_language()
+                self.ui_manager.update_language_detection(detected_lang, confidence)
                 self.ui_manager.show_visual_feedback()
+                
+                # Update detection statistics panel if available
+                detection_stats = self.speech_engine.get_language_detection_stats()
+                self.ui_manager.show_language_detection_panel(detection_stats)
             
         except Exception as e:
             self.logger.error(f"Error processing recognition result: {e}")
@@ -308,6 +320,30 @@ class LiveCaptioner:
         self.logger.info("Window close requested")
         self.shutdown_requested = True
         self.ui_manager.stop_mainloop()
+    
+    def _on_language_override(self, language: str) -> None:
+        """Handle manual language override from UI"""
+        try:
+            success = self.speech_engine.force_language_detection(language)
+            if success:
+                self.ui_manager.update_status(f"Language manually set to {language.upper()}", 'blue')
+                self.logger.info(f"Language detection manually set to: {language}")
+            else:
+                self.ui_manager.update_status("Error: Invalid language selection", 'red')
+                self.logger.error(f"Invalid language selection: {language}")
+        except Exception as e:
+            self.logger.error(f"Error handling language override: {e}")
+            self.ui_manager.update_status("Error: Language override failed", 'red')
+    
+    def _on_language_reset(self) -> None:
+        """Handle language detection reset to automatic mode"""
+        try:
+            self.speech_engine.reset_language_detection()
+            self.ui_manager.update_status("Language detection reset to automatic", 'blue')
+            self.logger.info("Language detection reset to automatic mode")
+        except Exception as e:
+            self.logger.error(f"Error resetting language detection: {e}")
+            self.ui_manager.update_status("Error: Language reset failed", 'red')
     
     def _cleanup(self) -> None:
         """Cleanup all resources"""
